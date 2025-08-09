@@ -5,14 +5,10 @@ pipeline {
         NODE_VERSION = '18.x'
     }
 
-//    tools {
-//        nodejs "${NODE_VERSION}"
-//    }
-
     stages {
-        stage('Checkout'){
-            steps{
-                checkout scm     
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
         }
 
@@ -37,27 +33,28 @@ pipeline {
                     }
                 }
             }
-        }        
+        }
 
-        stage("Install dependencies"){
-            steps{
-                script{
-                    if(isUnix){
+        stage('Install dependencies') {
+            steps {
+                script {
+                    if (isUnix()) {
                         sh 'npm install'
-                    }
-                    else {
-                        sh 'npm install '
+                    } else {
+                        bat 'npm install'
                     }
                 }
             }
         }
 
-        stage("Start application and run tests"){
-            steps{
-                scrip{
-                    sh 'npm start &'
-                    sh 'wait-on http://localhost:8080'
-                    sh 'npm test'
+        stage('Run tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'node ./node_modules/mocha/bin/mocha tests/*.js'
+                    } else {
+                        bat 'node ./node_modules/mocha/bin/mocha tests/*.js'
+                    }
                 }
             }
         }
@@ -65,7 +62,7 @@ pipeline {
 
     post {
         always {
-            echo "CI pipeline completed"
+            echo 'CI Pipeline completed.'
         }
     }
 }
